@@ -1,0 +1,98 @@
+/* 1. REQUIRED IMPORTS */
+@import "tailwindcss";
+
+/* If using shadcn's recommended animation package for v4 */
+/* Make sure you ran: npm install tw-animate-css */
+@import "tw-animate-css"; 
+
+@custom-variant dark (&:is(.dark *));
+
+/* 2. THEME MAPPING: Connects Tailwind classes to your CSS variables */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}
+
+/* 3. VARIABLE DEFINITIONS: The actual OKLCH values for your theme */
+:root {
+  --background: oklch(0.98 0.01 260); 
+  --foreground: oklch(0.15 0.04 260);
+
+  /* BRIGHTER FIRM BLUE: An inch brighter than before */
+  --primary: oklch(0.68 0.13 250); 
+  /* FLASHY TEXT: Make foreground white for ultimate pop */
+  --primary-foreground: oklch(1 0 0); 
+
+  --card: oklch(1 0 0);
+  --border: oklch(0.92 0.02 260);
+  --ring: oklch(0.68 0.13 250);
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: oklch(0.20 0.02 260); 
+  --foreground: oklch(0.94 0.02 260);
+
+  /* BRIGHTER FIRM BLUE DARK: An inch brighter glow */
+  --primary: oklch(0.72 0.15 250); 
+  --primary-foreground: oklch(0.15 0.04 260);
+  
+  --card: oklch(0.24 0.03 260);
+  --border: oklch(0.28 0.03 260);
+}
+
+@layer components {
+  /* ... (Keep the card-soft styles as they were, we are changing the button now) ... */
+  .card-soft {
+    background-color: var(--card);
+    @apply border border-transparent transition-all duration-300 shadow-sm relative overflow-hidden;
+  }
+  .card-soft:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: 0 15px 35px -10px oklch(var(--primary) / 0.2);
+  }
+
+  .btn-soft {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    @apply font-bold rounded-xl px-6 py-2.5 transition-all duration-300;
+    box-shadow: 0 4px 12px 0 oklch(var(--primary) / 0.25);
+  }
+
+  /* TEXT FLASH & BRIGHTNESS BUMP */
+  .card-soft:hover .btn-soft,
+  .btn-soft:hover {
+    filter: brightness(1.2); /* Bumps the button color up */
+    transform: scale(1.03); /* A subtle pop when you touch the button area */
+    box-shadow: 0 0 25px oklch(var(--primary) / 0.5); /* A more intense flash glow */
+    color: oklch(1 0 0); /* Ensure text is pure white and flashy */
+  }
+}
