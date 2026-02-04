@@ -141,7 +141,7 @@ export async function signUp(formData:FormData){
 
     const supabase= await createClient()
 
-    const{error}= await supabase.auth.signUp({email, password, 
+    const{data,error}= await supabase.auth.signUp({email, password, 
         // Ensure this matches your Vercel URL + /auth/callback
         options: {emailRedirectTo:`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`}
 
@@ -149,6 +149,10 @@ export async function signUp(formData:FormData){
 
     if(error){
         throw new Error(error.message)
+    }
+
+    if(data?.session){
+        redirect("/messages")
     }
     // Return success to the UI instead of redirecting
     return{success:true, email}
