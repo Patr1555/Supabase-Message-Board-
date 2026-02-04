@@ -226,4 +226,8 @@ export async function signIn(formData:FormData){
        });
          
        if(error) throw new Error(error.message)
-    }
+
+     // Redirect to login with a success parameter
+        redirect('/login?message=Password updated successfully! You can now log in.')
+}
+    

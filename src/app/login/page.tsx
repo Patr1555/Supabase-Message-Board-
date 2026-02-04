@@ -1,15 +1,28 @@
 'use client'
-
+import { useSearchParams } from "next/navigation"
 import { useActionState } from "react"
 import { signIn } from "../action"
 import Link from "next/link"
 
 export default function Login() {
+    const searchParams=useSearchParams();// 2. Initialize
+    const message= searchParams.get('message');// 3. Get the message
+
+
+
+
     return (
         <main className="flex min-h-[85vh] items-center justify-center px-4 py-6">
             {/* Added md:p-14 to keep your desktop padding, but p-8 for mobile so it fits small screens */}
             <div className="card-soft w-full max-w-md rounded-[2.5rem] p-8 md:p-14 shadow-xl border border-foreground/5">
-                
+
+            
+                {/* 4. SUCCESS BANNER: Shows only if 'message' exists in URL */}
+                {message && (
+                    <div className="mb-8 p-5 rounded-3xl bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest text-center animate-in fade-in slide-in-from-top-4">
+                        ✅ {message}
+                    </div>
+                )}
                 <div className="mb-12 text-center">
                     <h1 className="text-3xl font-extrabold tracking-tight">Welcome Back</h1>
                     <p className="text-foreground/50 mt-3 font-medium">Log in to your Minimessage account</p>

@@ -53,24 +53,27 @@ export default async function Home() {
 
         {/* FEED AREA */}
         <div className="relative">
-          {error || !messages || messages.length === 0 ? (
-            <div className="input-bubble p-12 md:p-20 text-center italic text-foreground/20 text-lg md:text-xl">
-              No messages found in your cloud.
-            </div>
-          ) : (
-            <MessageList 
-              messages={messages as messageWithLikes} 
-              userId={user.id} 
-            />
-          )}
-        </div>
-      </div>
+  
+  {/* 1. Show the MessageList ALWAYS (Input form is at the top of this component) */}
+  <MessageList 
+    messages={messages as messageWithLikes || []} 
+    userId={user.id} 
+  />
 
+  {/* 2. Show the "No messages" text separately ONLY if the list is empty */}
+  {(error || !messages || messages.length === 0) && (
+    <div className="input-bubble mt-10 p-12 md:p-20 text-center italic text-foreground/20 text-lg md:text-xl">
+      No messages found in your cloud. Start by typing above!
+    </div>
+  )}
+</div>
+</div>
       <footer className="mt-auto py-10">
         <p className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.5em] text-foreground/20 font-black text-center">
           © 2024 MINIMESSAGE PRIVATE LTD
         </p>
       </footer>
     </main>
-  );
+  
+);
 }

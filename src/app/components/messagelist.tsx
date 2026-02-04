@@ -2,107 +2,102 @@
 
 import { useOptimistic } from "react"
 import { addMessage, deleteMessage, toggleLike, updateMessage } from "../action"
-import { Database } from "../../../types/supabase"
 
-type Message={
+// Defined the exact shape based on your Supabase query
+type Message = {
     id: string;
     content: string | null;
     user_id: string;
-    likes: { count: number }|{count:number}[]; 
-    likes_user:{user_id:string}[];
+    likes: { count: number }[]; // Array of objects from Supabase join
+    likes_user: { user_id: string }[];
 }
 
 const likingRef = new Set<string>()
 
-export default function MessageList({messages,userId}:{messages:Message[], userId: string}){
-    const[optimisticMessages, addOptimisticMessage]=useOptimistic<Message[], Message>(messages,(state, newMessage) => {
-    // Check if we are updating an existing message (like a toggle)
-    const exists = state.find((m)=> m.id === newMessage.id)
-    if (exists) {
-      return state.map((m)=> (m.id === newMessage.id? newMessage:m))
-    }
-    // Otherwise, add the new message to the list
-    return [...state, newMessage];
-  }
-);
-const handleKeyDown=(e: React.KeyboardEvent<HTMLInputElement>)=>{
-    if(e.key==="Enter"){
-        e.preventDefault();
-        e.currentTarget.form?.requestSubmit();
-    }
-}
+export default function MessageList({ messages, userId }: { messages: Message[], userId: string }) {
+    const [optimisticMessages, addOptimisticMessage] = useOptimistic<Message[], Message>(
+        messages,
+        (state, newMessage) => {
+            const exists = state.find((m) => m.id === newMessage.id)
+            if (exists) {
+                return state.map((m) => (m.id === newMessage.id ? newMessage : m))
+            }
+            return [newMessage, ...state]; // Added new messages to top for better UX
+        }
+    );
 
-    async function action(formData:FormData){
-        const content=formData.get("content") as string
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            e.currentTarget.form?.requestSubmit();
+        }
+    }
 
+    async function action(formData: FormData) {
+        const content = formData.get("content") as string
         addOptimisticMessage({
-            id:crypto.randomUUID(), //temporary key
-            content, 
-            user_id:userId,
-             likes: [{ count: 0 }],
-             likes_user:[],
+            id: crypto.randomUUID(),
+            content,
+            user_id: userId,
+            likes: [{ count: 0 }],
+            likes_user: [],
         })
-
         await addMessage(formData)
     }
 
-    async function handleUpdate(formData:FormData){
-     await updateMessage(formData)
+    async function handleUpdate(formData: FormData) {
+        await updateMessage(formData)
     }
 
-    async function handleDelete(formData:FormData){
+    async function handleDelete(formData: FormData) {
         await deleteMessage(formData)
     }
 
-    async function handleLike(formData:FormData){
-       const messageId=formData.get("message_id") as string
-       if(!messageId) return;
-
-// ✅ ADD THIS GUARD (prevents double toggle)
-      if(likingRef.has(messageId))return
-      likingRef.add(messageId)
-
-      const current= optimisticMessages.find((m)=>m.id === messageId)
-      if(!current){
-        likingRef.delete(messageId)
-        return
-      }
+    async function handleLike(formData: FormData) {
+        const messageId = formData.get("message_id") as string
+        if (!messageId) return;
         
-      // Replace the currentCount line with this safe version:
-const currentCount = (Array.isArray(current.likes) ? current.likes[0]?.count : current.likes?.count) ?? 0;
+        if (likingRef.has(messageId)) return 
+        likingRef.add(messageId)
 
-      const likedByMe = current.likes_user.some(
-  l => l.user_id === userId
-)
-      addOptimisticMessage({
-        ...current,
-        likes:[{count: likedByMe? Math.max(0, currentCount-1):currentCount+1}],
-        likes_user: likedByMe ?
-        current.likes_user.filter(l=>l.user_id !==userId)
-        :[...current.likes_user, {user_id:userId}]
+        const current = optimisticMessages.find((m) => m.id === messageId)
+        if (!current) {
+            likingRef.delete(messageId)
+            return
+        }
 
-      });
- try{
-  await toggleLike(formData)
- }
- catch(e){
-  console.error("Like failed", e)
- }
- finally{
-  // ✅ RELEASE LOCK
- likingRef.delete(messageId)
- }
-  }
+        // Type-safe access to the count without using 'any'
+        const currentCount = current.likes[0]?.count ?? 0;
+        const likedByMe = current.likes_user.some(l => l.user_id === userId)
 
-    return(
+        addOptimisticMessage({
+            ...current,
+            likes: [{ count: likedByMe ? Math.max(0, currentCount - 1) : currentCount + 1 }],
+            likes_user: likedByMe 
+                ? current.likes_user.filter(l => l.user_id !== userId) 
+                : [...current.likes_user, { user_id: userId }]
+        });
+
+        try {
+            await toggleLike(formData)
+        } catch (e) {
+            console.error("Like failed", e)
+        } finally {
+            likingRef.delete(messageId)
+        }
+    }
+
+    return (
         <div className="w-full space-y-12">
-            {/* BIG INPUT BOX - Stacks on mobile, row on desktop */}
-            <form action={action} className="card-soft p-6 md:p-8 rounded-[2.5rem] flex flex-col md:flex-row gap-4 shadow-lg border border-foreground/5">
-                <input 
+            {/* 1. INPUT FORM - PERMANENTLY AT THE TOP */}
+            <form action={action} className="card-soft p-6 md:p-8 rounded-[2.5rem] flex flex-col md:flex-row gap-4 shadow-lg border border-foreground/5 bg-background/60">
+                <textarea 
                     name="content" 
                     placeholder="Write a message..." 
                     required 
-                    className="input-bubble h-16 flex-1 px-8 text-lg md:text-xl font-medium outline-none w-full"
+                    rows={1} 
+                    onKeyDown={handleKeyDown} 
+                    className="input-bubble min-h-[64px] flex-1 px-8 py-4 text-lg md:text-xl font-medium outline-none w-full resize-none bg-transparent" 
                 />
                 <button type="submit" className="btn-soft bg-primary text-white w-full md:w-auto px-12 h-16 text-sm font-black uppercase tracking-widest hover:brightness-110 transition-all shrink-0">
                     Send
@@ -110,14 +105,13 @@ const currentCount = (Array.isArray(current.likes) ? current.likes[0]?.count : c
             </form>
 
             <ul className="space-y-10">
-                {optimisticMessages.map((msg)=> {
-                    const count = (Array.isArray(msg.likes) ? msg.likes[0]?.count : msg.likes?.count) ?? 0;
+                {optimisticMessages.map((msg) => {
+                    // Safe type access
+                    const count = msg.likes[0]?.count ?? 0;
                     const isLiked = msg.likes_user.some(l => l.user_id === userId);
 
                     return (
-                        <li key={msg.id} className="card-soft p-8 md:p-14 rounded-[3rem] shadow-xl border border-foreground/5 bg-background/40 transition-all">
-                            
-                            {/* UPDATE SECTION */}
+                        <li key={msg.id} className="card-soft p-6 md:p-14 rounded-[3rem] shadow-xl border border-foreground/5 bg-background/40 transition-all overflow-hidden">
                             <form action={handleUpdate} className="space-y-6">
                                 <div className="flex flex-col gap-4">
                                     <div className="flex flex-col gap-1.5 ml-2 md:ml-5">
@@ -128,40 +122,35 @@ const currentCount = (Array.isArray(current.likes) ? current.likes[0]?.count : c
                                             Edit your message content below
                                         </p>
                                     </div>
-                                    <input 
+                                    <textarea 
                                         name="content" 
                                         defaultValue={msg.content ?? ''} 
-                                        onKeyDown={handleKeyDown}
-                                        className="input-bubble p-6 md:p-8 text-xl md:text-2xl font-bold min-h-[120px] md:min-h-[140px] border-foreground/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all w-full"
+                                        className="input-bubble p-6 md:p-8 text-xl md:text-2xl font-bold min-h-[120px] md:min-h-[140px] border-foreground/5 focus:ring-2 focus:ring-primary/20 outline-none transition-all w-full bg-transparent break-words" 
                                     />
                                     <input type="hidden" name="id" value={msg.id} />
                                 </div>
-                                
-                                {/* Button Section - Responsive stacking and better spacing */}
+
+                                {/* 2. BUTTON SECTION - FORCED STACKING ON MOBILE */}
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4 pt-8 border-t border-foreground/5 mt-4">
-                                    
-                                    {/* LIKE/UNLIKE BUTTON - Stays on the left if space allows */}
                                     <button 
                                         formAction={handleLike} 
-                                        className={`btn-soft px-6 md:px-8 py-4 text-[10px] font-black uppercase tracking-widest sm:mr-auto transition-all ${isLiked ? 'bg-pink-500/10 text-pink-500 shadow-inner' : 'bg-foreground/5 text-foreground/40 hover:bg-pink-500/5'}`}
+                                        className={`btn-soft w-full sm:w-auto px-8 py-5 text-[11px] font-black uppercase tracking-widest sm:mr-auto transition-all ${isLiked ? 'bg-pink-500/10 text-pink-500 shadow-inner' : 'bg-foreground/5 text-foreground/40 hover:bg-pink-500/5'}`}
                                     >
                                         <input type="hidden" value={msg.id} name="message_id" />
                                         {isLiked ? '❤️ Liked' : '🤍 Like'} ({count})
                                     </button>
 
-                                    {/* Action Group: Delete and Update */}
-                                    <div className="flex gap-2 w-full sm:w-auto">
+                                    <div className="flex flex-row gap-3 w-full sm:w-auto">
                                         <button 
                                             formAction={handleDelete} 
-                                            className="btn-soft bg-red-500/5 text-red-500 hover:bg-red-500 hover:text-white flex-1 sm:flex-none px-6 md:px-8 py-4 text-[10px] font-black uppercase tracking-widest transition-all"
+                                            className="btn-soft bg-red-500/10 text-red-500 flex-1 sm:flex-none px-6 md:px-8 py-5 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white"
                                         >
                                             <input type="hidden" name="id" value={msg.id} />
                                             Delete
                                         </button>
-
                                         <button 
                                             type="submit" 
-                                            className="btn-soft bg-primary text-white flex-1 sm:flex-none px-8 md:px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
+                                            className="btn-soft bg-primary text-white flex-1 sm:flex-none px-8 md:px-10 py-5 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all"
                                         >
                                             Update
                                         </button>
