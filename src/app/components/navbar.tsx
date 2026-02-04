@@ -7,48 +7,50 @@ export default async function Navbar() {
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md">
+      {/* Reduced px on mobile (px-4) to prevent logo/buttons from hitting screen edges */}
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 md:px-6">
         
-        {/* Logo - Firm Blue Text */}
+        {/* Logo - Larger for mobile visibility */}
         <div className="flex items-center gap-2">
           <Link 
             href="/" 
-            className="text-xl font-extrabold tracking-tighter text-primary transition-opacity hover:opacity-80"
+            className="text-lg md:text-xl font-black tracking-tighter text-primary uppercase transition-opacity hover:opacity-80"
           >
             Minimessage
           </Link>
         </div>
 
-        {/* Links & Auth Logic */}
-        <div className="flex items-center gap-6">
+        {/* Links & Auth Logic - Gap reduced on mobile */}
+        <div className="flex items-center gap-3 md:gap-6">
           {!user ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
               <Link 
                 href="/login" 
-                className="text-sm font-medium text-foreground/70 transition-colors hover:text-primary"
+                className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground/70 transition-colors hover:text-primary"
               >
                 Login
               </Link>
-              {/* Using your btn-soft class for Signup */}
-              <Link href="/signup" className="btn-soft text-sm">
-                Get Started
+              {/* "Get Started" text is long, so we use a more compact version on tiny screens */}
+              <Link href="/signup" className="btn-soft px-4 md:px-6 py-2 md:py-3 text-[10px] md:text-sm">
+                <span className="hidden xs:inline">Get Started</span>
+                <span className="xs:hidden">Join</span>
               </Link>
             </div>
           ) : (
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 md:gap-6">
               <Link 
                 href="/messages" 
-                className="text-sm font-medium text-foreground/70 transition-colors hover:text-primary"
+                className="text-[10px] md:text-sm font-black uppercase tracking-widest text-foreground/70 transition-colors hover:text-primary"
               >
                 Messages
               </Link>
               
-              {/* Logout Form with Flashy Button */}
               <form action={signOut}>
                 <button 
                   type="submit" 
-                  className="btn-soft px-4 py-2 text-sm shadow-sm active:scale-95"
+                  /* Larger vertical padding for easier thumb-tapping */
+                  className="btn-soft px-4 py-2 md:py-3 text-[10px] md:text-sm shadow-sm active:scale-95"
                 >
                   Logout
                 </button>

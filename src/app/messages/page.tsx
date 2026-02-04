@@ -23,37 +23,38 @@ export default async function Home() {
   const { data: messages, error } = await messageQuery;
 
   return (
-    <main className="flex min-h-screen flex-col items-center px-4 pt-10 md:pt-16 bg-background">
+    <main className="flex min-h-screen flex-col items-center px-4 pt-6 md:pt-16 bg-background">
       
-      {/* Top Navigation Row */}
-      <div className="w-full max-w-6xl mb-8 flex justify-between items-center px-6">
+      {/* Top Navigation Row - Stacked on mobile for better space */}
+      <div className="w-full max-w-6xl mb-6 md:mb-10 flex flex-row justify-between items-center px-2 md:px-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tighter uppercase">Minimessage</h1>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-foreground/30 font-bold">Secure Dashboard</p>
+          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tighter uppercase">Minimessage</h1>
+          <p className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] text-foreground/30 font-bold">Secure Dashboard</p>
         </div>
-        <Link href="/" className="text-xs font-bold uppercase tracking-widest hover:text-primary transition-colors">
+        <Link href="/" className="text-[10px] md:text-xs font-bold uppercase tracking-widest hover:text-primary transition-colors border-b border-primary/20 pb-1">
           Home
         </Link>
       </div>
 
-      {/* THE BIG BOX */}
-      <div className="card-soft w-full max-w-6xl rounded-[3rem] p-10 md:p-20 shadow-2xl min-h-[70vh]">
+      {/* THE BIG BOX - Responsive padding is the key here */}
+      <div className="card-soft w-full max-w-6xl rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-10 md:p-20 shadow-2xl min-h-[80vh]">
         
-        <header className="mb-16 border-b border-foreground/5 pb-10 flex flex-col md:flex-row justify-between items-end gap-6">
-          <div className="space-y-2">
-            <span className="text-primary font-black uppercase tracking-tighter text-sm">Verified Session</span>
-            <h2 className="text-5xl font-black tracking-tight">Your Messages</h2>
+        {/* Header - Stacks on mobile, flows on desktop */}
+        <header className="mb-10 md:mb-16 border-b border-foreground/5 pb-8 md:pb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div className="space-y-1 md:space-y-2">
+            <span className="text-primary font-black uppercase tracking-tighter text-[10px] md:text-sm">Verified Session</span>
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-none">Your Messages</h2>
           </div>
-          <div className="text-right">
-            <p className="text-foreground/40 italic mb-1">Signed in as</p>
-            <p className="font-bold text-lg">{user.email}</p>
+          <div className="text-left md:text-right w-full md:w-auto pt-4 md:pt-0 border-t md:border-none border-foreground/5">
+            <p className="text-[10px] md:text-foreground/40 italic mb-1 uppercase tracking-widest md:normal-case">Signed in as</p>
+            <p className="font-bold text-base md:text-lg break-all">{user.email}</p>
           </div>
         </header>
 
         {/* FEED AREA */}
         <div className="relative">
-          {error || !messages ? (
-            <div className="input-bubble p-20 text-center italic text-foreground/20 text-xl">
+          {error || !messages || messages.length === 0 ? (
+            <div className="input-bubble p-12 md:p-20 text-center italic text-foreground/20 text-lg md:text-xl">
               No messages found in your cloud.
             </div>
           ) : (
@@ -65,8 +66,8 @@ export default async function Home() {
         </div>
       </div>
 
-      <footer className="mt-12 mb-10">
-        <p className="text-[10px] uppercase tracking-[0.5em] text-foreground/20 font-black">
+      <footer className="mt-auto py-10">
+        <p className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.5em] text-foreground/20 font-black text-center">
           © 2024 MINIMESSAGE PRIVATE LTD
         </p>
       </footer>
