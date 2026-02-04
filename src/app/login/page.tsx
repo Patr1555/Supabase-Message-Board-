@@ -3,21 +3,16 @@ import { useSearchParams } from "next/navigation"
 import { useActionState } from "react"
 import { signIn } from "../action"
 import Link from "next/link"
+import { Suspense } from "react"
 
-export default function Login() {
-    const searchParams=useSearchParams();// 2. Initialize
-    const message= searchParams.get('message');// 3. Get the message
-
-
-
+// Logic and UI remain untouched, just moved into this sub-component
+function LoginContent() {
+    const searchParams = useSearchParams();
+    const message = searchParams.get('message');
 
     return (
         <main className="flex min-h-[85vh] items-center justify-center px-4 py-6">
-            {/* Added md:p-14 to keep your desktop padding, but p-8 for mobile so it fits small screens */}
             <div className="card-soft w-full max-w-md rounded-[2.5rem] p-8 md:p-14 shadow-xl border border-foreground/5">
-
-            
-                {/* 4. SUCCESS BANNER: Shows only if 'message' exists in URL */}
                 {message && (
                     <div className="mb-8 p-5 rounded-3xl bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest text-center animate-in fade-in slide-in-from-top-4">
                         ✅ {message}
@@ -29,7 +24,6 @@ export default function Login() {
                 </div>
 
                 <form action={signIn} className="space-y-8">
-                    {/* Email Input Section */}
                     <div className="flex flex-col gap-4">
                         <label className="text-lg font-bold ml-3 text-foreground/80 tracking-tight">
                             Email Address
@@ -38,13 +32,11 @@ export default function Login() {
                             type="email" 
                             name="email" 
                             placeholder="Email"
-                            /* added px-8 so text doesn't hit the edges on small screens */
                             className="input-bubble h-16 text-lg w-full px-8 outline-none" 
                             required
                         />
                     </div>
 
-                    {/* Password Input Section */}
                     <div className="flex flex-col gap-4">
                         <label className="text-lg font-bold ml-3 text-foreground/80 tracking-tight">
                             Password
@@ -58,32 +50,23 @@ export default function Login() {
                         />
                     </div>
 
- <div className="text-right px-3">
-        <Link 
-            href="/forgot-password" 
-            className="text-[10px] font-black uppercase tracking-widest text-foreground/30 hover:text-primary transition-colors"
-        >
-            Forgot Password?
-        </Link>
-    </div>
+                    <div className="text-right px-3">
+                        <Link 
+                            href="/forgot-password" 
+                            className="text-[10px] font-black uppercase tracking-widest text-foreground/30 hover:text-primary transition-colors"
+                        >
+                            Forgot Password?
+                        </Link>
+                    </div>
 
-
-
-
-
-
-
-                    {/* The Flashy Firm Blue Button */}
                     <button 
                         type="submit" 
-                        /* Added transition and active:scale for better button feedback */
                         className="btn-soft w-full py-5 mt-6 text-xl font-bold shadow-md uppercase tracking-widest active:scale-95 transition-all"
                     >
                         Sign In
                     </button>
                 </form>
 
-                {/* Footer Link - Increased spacing and font weight for accessibility */}
                 <div className="mt-12 pt-6 border-t border-foreground/5 text-center">
                     <p className="text-base text-foreground/40 font-bold">
                         Need an account?{" "}
@@ -94,5 +77,14 @@ export default function Login() {
                 </div>
             </div>
         </main>
+    )
+}
+
+// This is the main export that Vercel needs to see the Suspense boundary
+export default function Login() {
+    return (
+        <Suspense fallback={null}>
+            <LoginContent />
+        </Suspense>
     )
 }
