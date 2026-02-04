@@ -51,12 +51,7 @@ function LoginContent() {
                     </div>
 
                     <div className="text-right px-3">
-                        <Link 
-                            href="/forgot-password" 
-                            className="text-[10px] font-black uppercase tracking-widest text-foreground/30 hover:text-primary transition-colors"
-                        >
-                            Forgot Password?
-                        </Link>
+                      
                     </div>
 
                     <button 
